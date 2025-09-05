@@ -1,0 +1,63 @@
+.loginContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1597994026582-e922a87b6408?q=80&w=2070');
+  background-size: cover;
+}
+
+.loginBox {
+  width: 100%;
+  max-width: 400px;
+  background-color: var(--card-dark);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.tabs {
+  display: flex;
+}
+
+.tabs button {
+  flex: 1;
+  padding: 15px;
+  border: none;
+  background-color: transparent;
+  color: #aaa;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.tabs button.active {
+  color: var(--secondary-green);
+  border-bottom-color: var(--secondary-green);
+}
+
+.form {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form h2 {
+  text-align: center;
+  margin-top: 0;
+  color: var(--light-green);
+}
+
+.form button {
+  margin-top: 1rem;
+  padding: 15px;
+}
+
+.error {
+  color: #FF5252;
+  text-align: center;
+  font-size: 0.9rem;
+}

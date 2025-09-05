@@ -1,0 +1,78 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.1.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String        @id @default(cuid())
+  phone               String        @unique
+  password            String
+  name                String
+  location            String
+  farmSize            Float
+  sustainabilityScore Int           @default(0)
+  streak              Int           @default(0)
+  lastLogin           DateTime?
+  farmPlan            Json?
+  posts               Post[]
+  groupMemberships    GroupMember[]
+  badges              UserBadge[] // Relation to earned badges
+}
+
+model Group {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  description String
+  members     GroupMember[]
+  posts       Post[]
+}
+
+model GroupMember {
+  userId  String
+  groupId String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([userId, groupId])
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  content   String
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  groupId   String
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+}
+
+model Crop {
+  id                  String @id @default(cuid())
+  name                String @unique
+  avgYieldPerAcre     Float
+  avgMarketPricePerUnit Float
+  avgInputCostPerAcre Float
+}
+
+model Badge {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  description String
+  iconUrl     String // A simple emoji or path to an icon
+  users       UserBadge[]
+}
+
+model UserBadge {
+  userId  String
+  badgeId String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge   Badge  @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, badgeId])
+}
