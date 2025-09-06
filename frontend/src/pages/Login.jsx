@@ -4,6 +4,11 @@ import api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import styles from './Login.module.css';
 
+const keralaDistricts = [
+  "Thiruvananthapuram", "Kollam", "Pathanamthitta", "Alappuzha", "Kottayam", "Idukki", "Ernakulam", 
+  "Thrissur", "Palakkad", "Malappuram", "Kozhikode", "Wayanad", "Kannur", "Kasaragod"
+];
+
 function Login() {
   const [activeTab, setActiveTab] = useState('login');
   return (
@@ -64,7 +69,7 @@ function RegisterForm({ setActiveTab }) {
     phone: '',
     password: '',
     name: '',
-    location: '',
+    location: keralaDistricts[0], // Default to the first district
     farmSize: ''
   });
   const [error, setError] = useState('');
@@ -91,8 +96,13 @@ function RegisterForm({ setActiveTab }) {
       <input type="text" name="name" onChange={handleChange} placeholder="Full Name" required />
       <input type="tel" name="phone" onChange={handleChange} placeholder="Phone Number" required />
       <input type="password" name="password" onChange={handleChange} placeholder="Password" required />
-      <input type="text" name="location" onChange={handleChange} placeholder="Your District (e.g., Thrissur)" required />
-      <input type="number" name="farmSize" onChange={handleChange} placeholder="Farm Size (in acres)" required />
+      <select name="location" value={formData.location} onChange={handleChange} required>
+        <option value="" disabled>-- Select Your District --</option>
+        {keralaDistricts.map(district => (
+          <option key={district} value={district}>{district}</option>
+        ))}
+      </select>
+      <input type="number" name="farmSize" onChange={handleChange} placeholder="Farm Size (in acres)" required min="0.1" step="0.1"/>
       {error && <p className={styles.error}>{error}</p>}
       <button type="submit" className="primary-btn">Register</button>
     </form>

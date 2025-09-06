@@ -10,8 +10,12 @@ const authRoutes = require('./api/auth.routes');
 const userRoutes = require('./api/user.routes');
 const plannerRoutes = require('./api/planner.routes');
 const groupRoutes = require('./api/groups.routes');
-const missionRoutes = require('./api/missions.routes'); // New
-const diagnoseRoutes = require('./api/diagnose.routes'); // New
+const missionRoutes = require('./api/missions.routes');
+const diagnoseRoutes = require('./api/diagnose.routes');
+const leaderboardRoutes = require('./api/leaderboard.routes'); // New
+const profileRoutes = require('./api/profile.routes'); // New
+const chatbotRoutes = require('./api/chatbot.routes'); // New
+const postsRoutes = require('./api/posts.routes'); // New
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -31,8 +35,12 @@ app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/planner', plannerRoutes);
 app.use('/api/groups', groupRoutes);
-app.use('/api/missions', missionRoutes); // New
-app.use('/api/diagnose', diagnoseRoutes); // New
+app.use('/api/missions', missionRoutes);
+app.use('/api/diagnose', diagnoseRoutes);
+app.use('/api/leaderboard', leaderboardRoutes); // New
+app.use('/api/profile', profileRoutes); // New
+app.use('/api/chatbot', chatbotRoutes); // New
+app.use('/api/posts', postsRoutes); // New
 
 app.get('/', (req, res) => {
   res.send('Krishi Khel Backend is running!');

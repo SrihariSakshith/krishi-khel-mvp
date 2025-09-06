@@ -1,14 +1,12 @@
 const cron = require('node-cron');
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../prismaClient'); // UPDATED LINE
 
-// This job runs every day at midnight.
 const checkUserStreaks = async () => {
     console.log('Running daily job: Checking user streaks...');
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(0, 0, 0, 0); // Normalize to start of yesterday
     
-    // Find users who haven't logged in since yesterday and reset their streak
     const usersToReset = await prisma.user.findMany({
         where: {
             lastLogin: {
@@ -30,8 +28,7 @@ const checkUserStreaks = async () => {
 };
 
 const startDailyJobs = () => {
-    // Schedule to run at 00:01 AM every day
-    cron.schedule('1 0 * * *', checkUserStreaks);
+    cron.schedule('1 0 * * *', checkUserStreaks); // Runs at 00:01 AM every day
 };
 
 module.exports = { startDailyJobs };

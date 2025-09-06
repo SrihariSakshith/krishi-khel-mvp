@@ -1,176 +1,199 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Stage, Layer, Rect, Text, Group } from 'react-konva';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../services/api';
 import styles from './FarmPlanner.module.css';
 
-const CROP_COLORS = { Banana: '#FFD700', Tapioca: '#8B4513', Rubber: '#333333', Coconut: '#A9A9A9' };
+const GRID_COLS = 30;
+const GRID_ROWS = 20;
+const CELLS_PER_ACRE = 10;
+
+const getProfitabilityRating = (profit) => {
+    if (profit > 100000) return { label: 'Excellent (A+)', color: '#4CAF50' };
+    if (profit > 50000) return { label: 'Good (B)', color: '#8BC34A' };
+    if (profit > 0) return { label: 'Fair (C)', color: '#FFEB3B', textColor: '#333' };
+    return { label: 'Loss (F)', color: '#F44336' };
+}
 
 function FarmPlanner() {
-  const [crops, setCrops] = useState([]);
-  const [plots, setPlots] = useState([]);
-  const [totalAcres, setTotalAcres] = useState(10);
+  const [userCrops, setUserCrops] = useState([]);
+  const [totalAcres, setTotalAcres] = useState(1);
+  const [grid, setGrid] = useState(Array(GRID_ROWS * GRID_COLS).fill(null)); // Flattened grid
+  const [selectedCropId, setSelectedCropId] = useState(null);
+  const [isPainting, setIsPainting] = useState(false);
+  const [isErasing, setIsErasing] = useState(false);
   const [analysis, setAnalysis] = useState(null);
-  const [selectedPlotId, setSelectedPlotId] = useState(null);
-  
-  const stageRef = useRef();
+  const [showCropModal, setShowCropModal] = useState(false);
 
   const fetchData = useCallback(async () => {
-    const cropsRes = await api.get('/planner/crops');
-    setCrops(cropsRes.data);
-    const planRes = await api.get('/planner/my-plan');
-    setPlots(planRes.data.plots || []);
-    setTotalAcres(planRes.data.totalAcres || 10);
+    try {
+      const cropsRes = await api.get('/planner/crops');
+      setUserCrops(cropsRes.data);
+      const planRes = await api.get('/planner/my-plan');
+      if (planRes.data && planRes.data.grid) {
+        setGrid(planRes.data.grid);
+      }
+      setTotalAcres(planRes.data.totalAcres || 1);
+    } catch (error) { console.error("Failed to fetch planner data", error); }
   }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-  const analyzePlan = useCallback(async (currentPlots) => {
-    if (currentPlots.length > 0) {
-      const res = await api.post('/planner/analyze', { plots: currentPlots });
+  const allocatedCells = useMemo(() => grid.filter(Boolean).length, [grid]);
+  const allocatedAcres = allocatedCells / CELLS_PER_ACRE;
+
+  const analyzePlan = useCallback(async (currentGrid) => {
+    const plotMap = new Map();
+    currentGrid.forEach(cell => {
+        if (cell) {
+            plotMap.set(cell, (plotMap.get(cell) || 0) + 1);
+        }
+    });
+    
+    const plots = Array.from(plotMap.entries()).map(([cropId, cellCount]) => ({
+        cropId,
+        area: cellCount / CELLS_PER_ACRE
+    }));
+
+    if (plots.length > 0) {
+      const res = await api.post('/planner/analyze', { plots });
       setAnalysis(res.data);
     } else {
       setAnalysis(null);
     }
   }, []);
 
-  useEffect(() => {
-    analyzePlan(plots);
-  }, [plots, analyzePlan]);
+  useEffect(() => { analyzePlan(grid) }, [grid, analyzePlan]);
   
-  const handleAddPlot = (cropName) => {
-    const newPlot = {
-      id: Date.now(),
-      x: 50,
-      y: 50,
-      width: 100,
-      height: 100,
-      crop: cropName,
-      area: 1
-    };
-    setPlots([...plots, newPlot]);
-  };
+  const handleCellInteraction = (index) => {
+    if (isErasing) {
+      if (grid[index] !== null) {
+        const newGrid = [...grid];
+        newGrid[index] = null;
+        setGrid(newGrid);
+      }
+      return;
+    }
 
-  const handleDeletePlot = () => {
-    if (!selectedPlotId) return;
-    setPlots(plots.filter(p => p.id !== selectedPlotId));
-    setSelectedPlotId(null);
-  };
-
-  const handleUpdateAcreage = (e) => {
-    const newArea = parseFloat(e.target.value);
-    if (!selectedPlotId || isNaN(newArea)) return;
-    setPlots(plots.map(p => p.id === selectedPlotId ? { ...p, area: newArea } : p));
+    if (!selectedCropId) {
+      alert("Please select a crop from the palette first.");
+      return;
+    }
+    
+    if (allocatedCells >= totalAcres * CELLS_PER_ACRE && !grid[index]) {
+        alert(`You have allocated all of your ${totalAcres} acres.`);
+        return;
+    }
+    
+    const newGrid = [...grid];
+    newGrid[index] = selectedCropId;
+    setGrid(newGrid);
   };
   
-  const handleDragEnd = (e, index) => {
-    const newPlots = [...plots];
-    newPlots[index].x = e.target.x();
-    newPlots[index].y = e.target.y();
-    setPlots(newPlots);
-  };
+  const handleMouseDown = (index) => {
+    setIsPainting(true);
+    handleCellInteraction(index);
+  }
+
+  const handleMouseEnter = (index) => {
+    if (isPainting) handleCellInteraction(index);
+  }
+
+  const handleMouseUp = () => {
+    setIsPainting(false);
+  }
 
   const handleSavePlan = () => {
-    api.post('/planner/my-plan', { farmPlan: { plots, totalAcres } })
-       .then(() => alert('Plan saved! You have earned the "Farm Planner" badge!'));
+    api.post('/planner/my-plan', { farmPlan: { grid, totalAcres } })
+       .then(() => alert('Plan saved successfully!'));
   };
+  
+  const handleClearBoard = () => {
+    setGrid(Array(GRID_ROWS * GRID_COLS).fill(null));
+  }
 
-  const checkDeselect = (e) => {
-    const clickedOnEmpty = e.target === e.target.getStage();
-    if (clickedOnEmpty) {
-      setSelectedPlotId(null);
-    }
-  };
-
-  const selectedPlot = plots.find(p => p.id === selectedPlotId);
+  const profitability = analysis ? getProfitabilityRating(analysis.totalProfit) : null;
+  const cropColorMap = useMemo(() => Object.fromEntries(userCrops.map((c, i) => [c.id, `hsl(${(i * 40) % 360}, 70%, 50%)`])), [userCrops]);
 
   return (
     <div className={styles.planner}>
+      {showCropModal && <AddCropModal onClose={() => setShowCropModal(false)} onCropAdded={fetchData} />}
       <div className={styles.controls}>
         <div className="card">
           <h3>Crop Palette</h3>
+          <p>Manage your crops and select one to "paint" on the farm.</p>
           <div className={styles.cropButtons}>
-            {crops.map(crop => (
-              <button key={crop.id} onClick={() => handleAddPlot(crop.name)} className="primary-btn">{crop.name}</button>
+            {userCrops.map(crop => (
+              <button key={crop.id} onClick={() => { setSelectedCropId(crop.id); setIsErasing(false); }} className={selectedCropId === crop.id && !isErasing ? styles.selectedCrop : ''}>
+                <span className={styles.colorSwatch} style={{backgroundColor: cropColorMap[crop.id]}}></span> {crop.name}
+              </button>
             ))}
           </div>
+          <button onClick={() => setShowCropModal(true)} className={styles.addCropBtn}>+ Add New Crop</button>
+          <button onClick={() => { setIsErasing(true); setSelectedCropId(null); }} className={`${styles.eraserBtn} ${isErasing ? styles.selectedCrop : ''}`}>Eraser</button>
         </div>
-
-        {selectedPlot && (
-          <div className={`card ${styles.editPanel}`}>
-            <h3>Edit "{selectedPlot.crop}" Plot</h3>
-            <label>Acreage:</label>
-            <input 
-              type="number" 
-              value={selectedPlot.area}
-              onChange={handleUpdateAcreage}
-              min="0.1"
-              step="0.1"
-            />
-            <button onClick={handleDeletePlot} className={styles.deleteBtn}>Delete Plot</button>
-          </div>
-        )}
 
         {analysis && (
           <div className="card">
             <h3>Plan Analysis</h3>
-            <p>Land Used: {analysis.totalLandUsed.toFixed(1)} / {totalAcres} acres</p>
-            <p>Est. Cost: ₹{analysis.totalCost.toLocaleString()}</p>
-            <p>Est. Profit: ₹{analysis.totalProfit.toLocaleString()}</p>
-            <h4>Tips:</h4>
-            <ul className={styles.tipList}>
-              {analysis.tips.map((tip, i) => <li key={i}>{tip}</li>)}
-            </ul>
+            <div className={styles.analysisItem}><span className={styles.label}>Land Used:</span> <span className={styles.value}>{allocatedAcres.toFixed(1)} / {totalAcres} acres</span></div>
+            <div className={styles.analysisItem}><span className={styles.label}>Total Investment:</span> <span className={styles.value} style={{color: '#F44336'}}>₹{analysis.totalInvestment.toLocaleString('en-IN')}</span></div>
+            <div className={styles.analysisItem}><span className={styles.label}>Potential Revenue:</span> <span className={styles.value} style={{color: '#4CAF50'}}>₹{analysis.totalRevenue.toLocaleString('en-IN')}</span></div>
+            <hr className={styles.divider} />
+            <div className={styles.analysisItem}><span className={styles.label}>Net Profit / Loss:</span> <span className={styles.value} style={{color: analysis.totalProfit > 0 ? '#4CAF50' : '#F44336'}}>₹{analysis.totalProfit.toLocaleString('en-IN')}</span></div>
+            <div className={styles.analysisItem}><span className={styles.label}>Profitability:</span> <span className={styles.value} style={{backgroundColor: profitability.color, color: profitability.textColor || '#fff', padding: '2px 8px', borderRadius: '4px'}}>{profitability.label}</span></div>
           </div>
         )}
-        <button onClick={handleSavePlan} className={`primary-btn ${styles.saveBtn}`}>Save Plan</button>
+        <div className={styles.actionButtons}>
+            <button onClick={handleClearBoard} className={styles.clearBtn}>Clear Board</button>
+            <button onClick={handleSavePlan} className={`primary-btn ${styles.saveBtn}`}>Save Plan</button>
+        </div>
       </div>
 
-      <div className={styles.farmArea}>
-        <Stage 
-          width={window.innerWidth * 0.6} 
-          height={600} 
-          className={styles.stage}
-          onMouseDown={checkDeselect}
-          ref={stageRef}
-        >
-          <Layer>
-            {plots.map((plot, i) => (
-              <Group
-                key={plot.id}
-                x={plot.x}
-                y={plot.y}
-                draggable
-                onDragEnd={(e) => handleDragEnd(e, i)}
-                onClick={() => setSelectedPlotId(plot.id)}
-                onTap={() => setSelectedPlotId(plot.id)}
-              >
-                <Rect
-                  width={plot.width}
-                  height={plot.height}
-                  fill={CROP_COLORS[plot.crop] || 'grey'}
-                  stroke={selectedPlotId === plot.id ? '#00BFFF' : '#000'}
-                  strokeWidth={selectedPlotId === plot.id ? 4 : 1}
-                  shadowBlur={10}
-                />
-                <Text 
-                  text={`${plot.crop}\n${plot.area.toFixed(1)} ac`}
-                  fontSize={14}
-                  fill="#fff"
-                  padding={5}
-                  align="center"
-                  width={plot.width}
-                  verticalAlign="middle"
-                  height={plot.height}
-                />
-              </Group>
-            ))}
-          </Layer>
-        </Stage>
+      <div className={styles.farmArea} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
+        <div className={styles.grid}>
+          {grid.map((cellId, i) => (
+            <div 
+              key={i} 
+              className={styles.cell} 
+              style={{ backgroundColor: cellId ? cropColorMap[cellId] : undefined }}
+              onMouseDown={() => handleMouseDown(i)}
+              onMouseEnter={() => handleMouseEnter(i)}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
+}
+
+function AddCropModal({ onClose, onCropAdded }) {
+    const [formData, setFormData] = useState({ name: '', investmentPerAcre: '', revenuePerAcre: '' });
+    
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        await api.post('/planner/crops', formData);
+        onCropAdded();
+        onClose();
+    };
+
+    return (
+        <div className={styles.modalBackdrop}>
+            <div className={`card ${styles.modalContent}`}>
+                <h3>Add a New Crop</h3>
+                <form onSubmit={handleSubmit}>
+                    <label>Crop Name</label>
+                    <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
+                    <label>Investment per Acre (₹)</label>
+                    <input type="number" value={formData.investmentPerAcre} onChange={e => setFormData({...formData, investmentPerAcre: e.target.value})} required />
+                    <label>Potential Revenue per Acre (₹)</label>
+                    <input type="number" value={formData.revenuePerAcre} onChange={e => setFormData({...formData, revenuePerAcre: e.target.value})} required />
+                    <div className={styles.modalActions}>
+                        <button type="button" onClick={onClose}>Cancel</button>
+                        <button type="submit" className="primary-btn">Add Crop</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    )
 }
 
 export default FarmPlanner;

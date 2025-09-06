@@ -1,82 +1,32 @@
-.groupsPage {
-  display: flex;
-  gap: 20px;
-}
-
-.groupList {
-  flex: 1;
-  max-width: 250px;
-}
-
-.groupList button {
-  width: 100%;
-  text-align: left;
-  margin-bottom: 10px;
-  background-color: var(--card-dark);
-  color: var(--light-text);
-  border: 1px solid var(--border-color);
-}
-
-.groupList button:hover {
-  background-color: #2c2c2c;
-}
-
-.groupList button.activeGroup {
-  background-color: var(--primary-green);
-  border-color: var(--primary-green);
-}
-
-.feed {
-  flex: 3;
-}
-
-.postForm {
-  padding: 1.5rem;
-}
-
-.formActions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 1rem;
-}
-
-.postHeader {
-  display: flex;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: var(--primary-green);
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: 600;
-  margin-right: 12px;
-}
-
-.authorName {
-  font-weight: 600;
-  margin: 0;
-}
-
-.timestamp {
-  font-size: 0.8rem;
-  color: #aaa;
-  margin: 0;
-}
-
-.postContent {
-  line-height: 1.6;
-}
-
-.postImage {
-  max-width: 100%;
-  border-radius: 8px;
-  margin-top: 1rem;
-}
+.groupsPage { display: flex; gap: 20px; }
+.groupList { flex: 1; max-width: 280px; }
+.groupBtn { width: 100%; text-align: left; margin-bottom: 10px; background-color: var(--card-dark); color: var(--light-text); border: 1px solid var(--border-color); }
+.groupBtn:hover { background-color: #2c2c2c; }
+.groupBtn.activeGroup { background-color: var(--primary-green); border-color: var(--primary-green); }
+.feed { flex: 3; }
+.postForm { padding: 1.5rem; }
+.formActions { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
+.postHeader { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+.authorInfo { display: flex; align-items: center; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; background-color: var(--primary-green); color: white; display: flex; justify-content: center; align-items: center; font-weight: 600; margin-right: 12px; text-transform: uppercase; }
+.authorName { font-weight: 600; margin: 0; }
+.timestamp { font-size: 0.8rem; color: #aaa; margin: 0; }
+.postMenu button { background: none; border: none; color: #aaa; cursor: pointer; margin-left: 10px; }
+.postMenu button:hover { color: #fff; }
+.editArea { width: 100%; min-height: 80px; margin-bottom: 10px; }
+.postContent { line-height: 1.6; white-space: pre-wrap; }
+.postImage { max-width: 100%; border-radius: 8px; margin-top: 1rem; }
+.postActions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); margin-top: 1rem; padding-top: 1rem; }
+.emojiBar { display: flex; gap: 5px; }
+.emojiBtn { font-size: 1.2rem; background: #2c2c2c; border: none; padding: 5px 10px; border-radius: 20px; }
+.emojiBtn:hover { transform: scale(1.2); }
+.commentBtn { background: none; border: none; color: #aaa; }
+.reactions { display: flex; gap: 10px; margin-top: 10px; }
+.reaction { background: #2c2c2c; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; }
+.commentSection { margin-top: 1rem; }
+.comment { display: flex; gap: 10px; margin-bottom: 1rem; }
+.commentBody { background: #2c2c2c; padding: 10px; border-radius: 8px; width: 100%; }
+.commentBody p { margin: 0; }
+.commentForm { display: flex; gap: 10px; margin-top: 1rem; }
+.commentForm input { margin: 0; }
+.commentForm button { background: var(--primary-green); color: #fff; border: none; }

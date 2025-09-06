@@ -14,6 +14,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--secondary-green);
+  text-decoration: none;
 }
 
 .logo span {
@@ -41,6 +42,26 @@
 .nav a.active {
   color: var(--secondary-green);
   border-bottom-color: var(--secondary-green);
+}
+
+.userMenu {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.iconBtn {
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  color: var(--light-text);
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.2s;
+}
+
+.iconBtn:hover {
+  transform: scale(1.1);
 }
 
 .logoutBtn {

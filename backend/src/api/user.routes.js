@@ -1,9 +1,8 @@
 const express = require('express');
-const { PrismaClient } = require('@prisma/client');
 const authMiddleware = require('../middleware/auth.middleware');
 const weatherService = require('../services/weather.service');
+const prisma = require('../prismaClient'); // UPDATED LINE
 const router = express.Router();
-const prisma = new PrismaClient();
 
 router.get('/dashboard', authMiddleware, async (req, res) => {
   try {

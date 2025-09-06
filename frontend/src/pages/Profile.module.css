@@ -1,0 +1,38 @@
+.profilePage h1 {
+    margin-bottom: 2rem;
+}
+
+.profileGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.profileGrid form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.profileGrid label {
+    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
+.profileGrid button {
+    margin-top: 1.5rem;
+}
+
+.success {
+    color: var(--secondary-green);
+    text-align: center;
+    margin-top: 1rem;
+    font-weight: 600;
+}
+
+.error {
+    color: #FF5252;
+    text-align: center;
+    margin-top: 1rem;
+    font-weight: 600;
+}

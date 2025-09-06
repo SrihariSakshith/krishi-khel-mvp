@@ -14,16 +14,29 @@ model User {
   password            String
   name                String
   location            String
+
   farmSize            Float
   sustainabilityScore Int           @default(0)
-  carbonCreditScore   Float         @default(0.0) // New Carbon Score
+  carbonCreditScore   Float         @default(0.0)
   streak              Int           @default(0)
   lastLogin           DateTime?
   farmPlan            Json?
   posts               Post[]
   groupMemberships    GroupMember[]
   badges              UserBadge[]
-  missions            UserMission[] // Relation to user's missions
+  missions            UserMission[]
+  comments            Comment[]
+  userCrops           UserCrop[] // Farmer's custom crops
+}
+
+// NEW MODEL for farmer-managed crops
+model UserCrop {
+  id            String @id @default(cuid())
+  name          String
+  investmentPerAcre Float
+  revenuePerAcre    Float
+  ownerId       String
+  owner         User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 }
 
 model Group {
@@ -43,23 +56,30 @@ model GroupMember {
 }
 
 model Post {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   content   String
   imageUrl  String?
+  emoji     Json?
+  createdAt DateTime  @default(now())
+  authorId  String
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  groupId   String
+  group     Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  comments  Comment[]
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
   createdAt DateTime @default(now())
   authorId  String
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  groupId   String
-  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
-model Crop {
-  id                  String @id @default(cuid())
-  name                String @unique
-  avgYieldPerAcre     Float
-  avgMarketPricePerUnit Float
-  avgInputCostPerAcre Float
-}
+// REMOVED generic Crop model
+// We will use UserCrop for a more interactive experience
 
 model Badge {
   id          String      @id @default(cuid())
@@ -77,7 +97,6 @@ model UserBadge {
   @@id([userId, badgeId])
 }
 
-// NEW MODELS FOR MISSIONS
 model Mission {
   id                  String        @id @default(cuid())
   title               String
@@ -95,6 +114,5 @@ model UserMission {
   proofUrl    String?
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   mission     Mission  @relation(fields: [missionId], references: [id], onDelete: Cascade)
-
   @@id([userId, missionId])
 }

@@ -4,8 +4,11 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import FarmPlanner from './pages/FarmPlanner';
 import Groups from './pages/Groups';
-import Missions from './pages/Missions'; // New
-import PestDetector from './pages/PestDetector'; // New
+import Missions from './pages/Missions';
+import PestDetector from './pages/PestDetector';
+import Leaderboard from './pages/Leaderboard';
+import Profile from './pages/Profile';
+import Chatbot from './pages/Chatbot';
 import { useAuth } from './hooks/useAuth';
 import { AuthProvider } from './context/AuthContext';
 
@@ -32,6 +35,9 @@ function App() {
                 <Route path="/planner" element={<FarmPlanner />} />
                 <Route path="/diagnose" element={<PestDetector />} />
                 <Route path="/groups" element={<Groups />} />
+                <Route path="/leaderboard" element={<Leaderboard />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/chatbot" element={<Chatbot />} />
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
             </Layout>

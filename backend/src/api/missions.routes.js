@@ -1,9 +1,8 @@
 const express = require('express');
-const { PrismaClient } = require('@prisma/client');
 const authMiddleware = require('../middleware/auth.middleware');
-const { uploadToDisk } = require('../middleware/upload.middleware'); // Corrected import
+const { uploadToDisk } = require('../middleware/upload.middleware');
+const prisma = require('../prismaClient'); // UPDATED LINE
 const router = express.Router();
-const prisma = new PrismaClient();
 
 router.get('/', authMiddleware, async (req, res) => {
     const userId = req.user.userId;
@@ -27,7 +26,7 @@ router.get('/', authMiddleware, async (req, res) => {
     }
 });
 
-router.post('/:id/complete', authMiddleware, uploadToDisk.single('proof'), async (req, res) => { // Corrected usage
+router.post('/:id/complete', authMiddleware, uploadToDisk.single('proof'), async (req, res) => {
     const userId = req.user.userId;
     const missionId = req.params.id;
     const proofUrl = req.file ? `/uploads/${req.file.filename}` : null;

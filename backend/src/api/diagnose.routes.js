@@ -1,57 +1,64 @@
 const express = require('express');
-const axios = require('axios');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 const authMiddleware = require('../middleware/auth.middleware');
-const { uploadToMemory } = require('../middleware/upload.middleware'); // Corrected import
+const { uploadToMemory } = require('../middleware/upload.middleware');
 const router = express.Router();
 
-const HUGGING_FACE_API_URL = "https://api-inference.huggingface.co/models/spr-mahe/plant-disease";
-const HUGGING_FACE_TOKEN = process.env.HUGGING_FACE_TOKEN;
+// Initialize Gemini with the API Key
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-const organicSolutions = {
-    'potato___early_blight': 'Apply a copper-based fungicide or a bio-fungicide containing Bacillus subtilis. Ensure good air circulation and avoid overhead watering.',
-    'potato___late_blight': 'Remove and destroy infected plants immediately. Apply copper-based fungicides preventively. Ensure well-drained soil.',
-    'potato___healthy': 'Your plant looks healthy! Keep up the good work with proper watering, soil nutrition, and regular monitoring.',
-    'tomato___bacterial_spot': 'Use copper-based sprays. Avoid working with plants when they are wet. Remove infected plant parts.',
-    'tomato___late_blight': 'Very difficult to control. Remove infected plants. Use preventative bio-fungicides and ensure good air flow.',
-    'tomato___healthy': 'Your plant looks healthy! Ensure consistent watering and good air circulation to prevent future diseases.',
-    'default': 'Practice crop rotation, ensure good soil health with compost, and remove any affected leaves to prevent spread. A neem oil spray can be effective against many common pests and fungi.'
-};
+// Helper function to convert image buffer to Gemini's format
+function fileToGenerativePart(buffer, mimeType) {
+  return {
+    inlineData: {
+      data: buffer.toString("base64"),
+      mimeType
+    },
+  };
+}
 
-router.post('/pest', authMiddleware, uploadToMemory.single('plantImage'), async (req, res) => { // Corrected usage
+router.post('/pest', authMiddleware, uploadToMemory.single('plantImage'), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No image uploaded.' });
     }
-    if (!HUGGING_FACE_TOKEN || HUGGING_FACE_TOKEN === "your_hugging_face_api_token_here") {
-        console.error("Hugging Face API token is missing or is the default value.");
+    if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === "your_google_gemini_api_key_here") {
         return res.status(500).json({ error: 'AI service is not configured.' });
     }
 
     try {
-        const response = await axios.post(HUGGING_FACE_API_URL, req.file.buffer, {
-            headers: {
-                'Authorization': `Bearer ${HUGGING_FACE_TOKEN}`,
-                'Content-Type': req.file.mimetype,
-            },
-        });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-        const diagnosis = response.data;
-        if (diagnosis && diagnosis.length > 0) {
-            const topResult = diagnosis[0];
-            const solutionKey = topResult.label.toLowerCase();
-            const solution = organicSolutions[solutionKey] || organicSolutions['default'];
-            
-            res.json({
-                disease: topResult.label.replace(/__/g, ' - ').replace(/_/g, ' '),
-                confidence: (topResult.score * 100).toFixed(2) + '%',
-                solution: solution
-            });
-        } else {
-            res.status(404).json({ error: 'Could not identify the disease.' });
-        }
+        const imagePart = fileToGenerativePart(req.file.buffer, req.file.mimetype);
+
+        const prompt = `
+            You are an expert plant pathologist specializing in sustainable and organic farming in India.
+            Analyze the attached image of a plant leaf.
+            Identify the most likely disease or state if it appears healthy.
+            Estimate your confidence level as a percentage.
+            Provide a concise, actionable, and organic/sustainable solution.
+            You must respond ONLY with a valid JSON object in the following format, with no other text before or after it:
+            {
+              "disease": "Name of the disease (e.g., 'Tomato - Late Blight')",
+              "confidence": "Your confidence percentage (e.g., '95.2%')",
+              "solution": "Your recommended organic solution."
+            }
+        `;
+
+        const result = await model.generateContent([prompt, imagePart]);
+        const response = await result.response;
+        
+        // Clean up the response to ensure it's valid JSON
+        let text = response.text();
+        text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+
+        // Parse the JSON response from Gemini
+        const diagnosis = JSON.parse(text);
+        
+        res.json(diagnosis);
 
     } catch (error) {
-        console.error("Hugging Face API Error:", error.response ? error.response.data : error.message);
-        res.status(500).json({ error: 'AI diagnosis failed. The model may be loading, please try again in a minute.' });
+        console.error("Gemini Vision API Error:", error);
+        res.status(500).json({ error: 'AI diagnosis failed. Please check the image and try again.' });
     }
 });
 
