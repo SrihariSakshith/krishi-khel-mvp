@@ -18,7 +18,9 @@ function Header() {
       </div>
       <nav className={styles.nav}>
         <NavLink to="/" className={({ isActive }) => isActive ? styles.active : ''}>Dashboard</NavLink>
+        <NavLink to="/missions" className={({ isActive }) => isActive ? styles.active : ''}>Missions</NavLink>
         <NavLink to="/planner" className={({ isActive }) => isActive ? styles.active : ''}>Farm Planner</NavLink>
+        <NavLink to="/diagnose" className={({ isActive }) => isActive ? styles.active : ''}>AI Detector</NavLink>
         <NavLink to="/groups" className={({ isActive }) => isActive ? styles.active : ''}>Groups</NavLink>
       </nav>
       <button onClick={handleLogout} className={styles.logoutBtn}>Logout</button>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import VoiceSpeaker from '../components/VoiceSpeaker';
 import styles from './Dashboard.module.css';
+import { Link } from 'react-router-dom';
 
 function Dashboard() {
   const [data, setData] = useState(null);
@@ -41,6 +42,13 @@ function Dashboard() {
             </div>
           </div>
           <div className={styles.stat}>
+            <span className={styles.statIcon}>🌍</span>
+            <div>
+              <p className={styles.statValue}>{user.carbonCreditScore.toFixed(2)}</p>
+              <p className={styles.statLabel}>Est. Carbon Credits</p>
+            </div>
+          </div>
+          <div className={styles.stat}>
             <span className={styles.statIcon}>🔥</span>
             <div>
               <p className={styles.statValue}>{user.streak}</p>
@@ -65,12 +73,11 @@ function Dashboard() {
         </div>
 
         <div className={`card ${styles.fullWidthCard}`}>
-          <h3>Your Missions & Reminders</h3>
-          <ul className={styles.missionList}>
-            <li>Complete your Farm Plan to earn the "Farm Planner" badge! <VoiceSpeaker textToSpeak="Your mission is to complete your farm plan." /></li>
-            <li>Post in the community group to connect with other farmers.</li>
-            <li>Check your soil health this week.</li>
-          </ul>
+          <h3>Quick Actions</h3>
+          <div className={styles.actions}>
+            <Link to="/missions" className="primary-btn">View Missions</Link>
+            <Link to="/diagnose" className="primary-btn">Diagnose Crop</Link>
+          </div>
         </div>
         
         <div className={`card ${styles.fullWidthCard}`}>

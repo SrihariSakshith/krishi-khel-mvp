@@ -1,15 +1,27 @@
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'src/uploads/');
+const uploadDir = 'src/uploads/';
+// Ensure the upload directory exists
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Store on disk for permanent user uploads (missions, posts)
+const diskStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
   },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname)); // Appending extension
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
   },
 });
 
-const upload = multer({ storage: storage });
+// Store in memory for temporary processing (AI diagnosis)
+const memoryStorage = multer.memoryStorage();
 
-module.exports = upload;
+module.exports = {
+  uploadToDisk: multer({ storage: diskStorage }),
+  uploadToMemory: multer({ storage: memoryStorage }),
+};

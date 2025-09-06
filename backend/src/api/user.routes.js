@@ -5,12 +5,11 @@ const weatherService = require('../services/weather.service');
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// Get user dashboard data
 router.get('/dashboard', authMiddleware, async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user.userId },
-      select: { name: true, sustainabilityScore: true, streak: true, location: true },
+      select: { name: true, sustainabilityScore: true, carbonCreditScore: true, streak: true, location: true },
     });
     
     if (!user) {
@@ -19,7 +18,6 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
 
     const weather = await weatherService.getWeather(user.location);
 
-    // Fetch user's badges
     const userBadges = await prisma.userBadge.findMany({
         where: { userId: req.user.userId },
         include: { badge: true }

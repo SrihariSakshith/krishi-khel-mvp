@@ -31,7 +31,10 @@
 .stat, .weather {
   display: flex;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+.stat:last-child {
+    margin-bottom: 0;
 }
 
 .statIcon {
@@ -72,13 +75,9 @@
   color: #aaa;
 }
 
-.missionList {
-  list-style: '✅ ';
-  padding-left: 20px;
-}
-
-.missionList li {
-  margin-bottom: 10px;
+.actions {
+    display: flex;
+    gap: 1rem;
 }
 
 .badgeGrid {

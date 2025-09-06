@@ -1,0 +1,47 @@
+.detector {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.uploadCard, .resultCard {
+  display: flex;
+  flex-direction: column;
+}
+
+.preview {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  margin: 1rem 0;
+  object-fit: contain;
+}
+
+.uploadCard button {
+  margin-top: auto; /* Pushes button to the bottom */
+}
+
+.result {
+  animation: fadeIn 0.5s;
+}
+
+.result p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.solutionTitle {
+  color: var(--secondary-green);
+  margin-top: 1.5rem;
+}
+
+.solutionText {
+    background-color: #2c2c2c;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-green);
+}
+
+.error {
+    color: #FF5252;
+}

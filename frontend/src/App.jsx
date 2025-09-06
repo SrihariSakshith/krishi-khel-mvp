@@ -4,6 +4,8 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import FarmPlanner from './pages/FarmPlanner';
 import Groups from './pages/Groups';
+import Missions from './pages/Missions'; // New
+import PestDetector from './pages/PestDetector'; // New
 import { useAuth } from './hooks/useAuth';
 import { AuthProvider } from './context/AuthContext';
 
@@ -26,7 +28,9 @@ function App() {
             <Layout>
               <Routes>
                 <Route path="/" element={<Dashboard />} />
+                <Route path="/missions" element={<Missions />} />
                 <Route path="/planner" element={<FarmPlanner />} />
+                <Route path="/diagnose" element={<PestDetector />} />
                 <Route path="/groups" element={<Groups />} />
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>

@@ -16,12 +16,14 @@ model User {
   location            String
   farmSize            Float
   sustainabilityScore Int           @default(0)
+  carbonCreditScore   Float         @default(0.0) // New Carbon Score
   streak              Int           @default(0)
   lastLogin           DateTime?
   farmPlan            Json?
   posts               Post[]
   groupMemberships    GroupMember[]
-  badges              UserBadge[] // Relation to earned badges
+  badges              UserBadge[]
+  missions            UserMission[] // Relation to user's missions
 }
 
 model Group {
@@ -37,7 +39,6 @@ model GroupMember {
   groupId String
   user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
-
   @@id([userId, groupId])
 }
 
@@ -64,7 +65,7 @@ model Badge {
   id          String      @id @default(cuid())
   name        String      @unique
   description String
-  iconUrl     String // A simple emoji or path to an icon
+  iconUrl     String
   users       UserBadge[]
 }
 
@@ -73,6 +74,27 @@ model UserBadge {
   badgeId String
   user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   badge   Badge  @relation(fields: [badgeId], references: [id], onDelete: Cascade)
-
   @@id([userId, badgeId])
+}
+
+// NEW MODELS FOR MISSIONS
+model Mission {
+  id                  String        @id @default(cuid())
+  title               String
+  description         String
+  sustainabilityPoints Int
+  carbonCreditPoints  Float
+  users               UserMission[]
+}
+
+model UserMission {
+  userId      String
+  missionId   String
+  status      String   @default("AVAILABLE") // AVAILABLE, COMPLETED
+  completedAt DateTime?
+  proofUrl    String?
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mission     Mission  @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  @@id([userId, missionId])
 }
