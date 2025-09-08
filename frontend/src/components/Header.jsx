@@ -20,11 +20,12 @@ function Header() {
         <NavLink to="/" className={({ isActive }) => isActive ? styles.active : ''}>Dashboard</NavLink>
         <NavLink to="/missions" className={({ isActive }) => isActive ? styles.active : ''}>Missions</NavLink>
         <NavLink to="/planner" className={({ isActive }) => isActive ? styles.active : ''}>Farm Planner</NavLink>
-        <NavLink to="/diagnose" className={({ isActive }) => isActive ? styles.active : ''}>AI Detector</NavLink>
+        <NavLink to="/schemes" className={({ isActive }) => isActive ? styles.active : ''}>Govt. Schemes</NavLink>
         <NavLink to="/groups" className={({ isActive }) => isActive ? styles.active : ''}>Community</NavLink>
         <NavLink to="/leaderboard" className={({ isActive }) => isActive ? styles.active : ''}>Leaderboard</NavLink>
       </nav>
       <div className={styles.userMenu}>
+        <NavLink to="/diagnose" className={styles.iconBtn} title="AI Crop Doctor">🔬</NavLink>
         <NavLink to="/chatbot" className={styles.iconBtn} title="Krishi Mitra AI">💬</NavLink>
         <NavLink to="/profile" className={styles.iconBtn} title="My Profile">👤</NavLink>
         <button onClick={handleLogout} className={styles.logoutBtn}>Logout</button>

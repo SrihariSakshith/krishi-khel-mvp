@@ -1,45 +1,15 @@
 const express = require('express');
 const authMiddleware = require('../middleware/auth.middleware');
-const prisma = require('../prismaClient'); // UPDATED LINE
+const prisma = require('../prismaClient');
 const router = express.Router();
 
-// --- CROP MANAGEMENT ---
-
+// Get all available crops (generic list)
 router.get('/crops', authMiddleware, async (req, res) => {
-    const userCrops = await prisma.userCrop.findMany({
-        where: { ownerId: req.user.userId }
-    });
-    res.json(userCrops);
+    const crops = await prisma.crop.findMany();
+    res.json(crops);
 });
 
-router.post('/crops', authMiddleware, async (req, res) => {
-    const { name, investmentPerAcre, revenuePerAcre } = req.body;
-    const newCrop = await prisma.userCrop.create({
-        data: {
-            name,
-            investmentPerAcre: parseFloat(investmentPerAcre),
-            revenuePerAcre: parseFloat(revenuePerAcre),
-            ownerId: req.user.userId
-        }
-    });
-    res.status(201).json(newCrop);
-});
-
-router.delete('/crops/:id', authMiddleware, async (req, res) => {
-    const { id } = req.params;
-    const crop = await prisma.userCrop.findUnique({ where: { id } });
-
-    if (!crop || crop.ownerId !== req.user.userId) {
-        return res.status(403).json({ error: "You can only delete your own crops." });
-    }
-
-    await prisma.userCrop.delete({ where: { id } });
-    res.status(204).send();
-});
-
-
-// --- FARM PLAN MANAGEMENT ---
-
+// Get user's saved farm plan
 router.get('/my-plan', authMiddleware, async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.user.userId } });
     if (!user) {
@@ -48,6 +18,7 @@ router.get('/my-plan', authMiddleware, async (req, res) => {
     res.json(user.farmPlan || { grid: null, totalAcres: user.farmSize });
 });
 
+// Save user's farm plan
 router.post('/my-plan', authMiddleware, async (req, res) => {
     const { farmPlan } = req.body;
     const userId = req.user.userId;
@@ -59,16 +30,15 @@ router.post('/my-plan', authMiddleware, async (req, res) => {
     res.status(200).json({ message: 'Plan saved successfully' });
 });
 
+// Analyze a given plan
 router.post('/analyze', authMiddleware, async (req, res) => {
-    const { plots } = req.body;
+    const { plots } = req.body; // plots is now an array like [{ cropId: '...', area: 2.5 }, ...]
     
     let totalInvestment = 0;
     let totalRevenue = 0;
     
-    const userCrops = await prisma.userCrop.findMany({
-        where: { ownerId: req.user.userId }
-    });
-    const cropDataMap = new Map(userCrops.map(c => [c.id, c]));
+    const allCrops = await prisma.crop.findMany();
+    const cropDataMap = new Map(allCrops.map(c => [c.id, c]));
 
     for (const plot of plots) {
         const cropData = cropDataMap.get(plot.cropId);

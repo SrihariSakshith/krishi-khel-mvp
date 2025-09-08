@@ -14,10 +14,10 @@ model User {
   password            String
   name                String
   location            String
-
   farmSize            Float
   sustainabilityScore Int           @default(0)
   carbonCreditScore   Float         @default(0.0)
+  digitalTrustScore   Int           @default(50) // New Scheme Eligibility Score
   streak              Int           @default(0)
   lastLogin           DateTime?
   farmPlan            Json?
@@ -26,17 +26,6 @@ model User {
   badges              UserBadge[]
   missions            UserMission[]
   comments            Comment[]
-  userCrops           UserCrop[] // Farmer's custom crops
-}
-
-// NEW MODEL for farmer-managed crops
-model UserCrop {
-  id            String @id @default(cuid())
-  name          String
-  investmentPerAcre Float
-  revenuePerAcre    Float
-  ownerId       String
-  owner         User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 }
 
 model Group {
@@ -78,8 +67,12 @@ model Comment {
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
-// REMOVED generic Crop model
-// We will use UserCrop for a more interactive experience
+model Crop {
+  id                  String @id @default(cuid())
+  name                String @unique
+  investmentPerAcre   Float
+  revenuePerAcre      Float
+}
 
 model Badge {
   id          String      @id @default(cuid())
@@ -103,6 +96,7 @@ model Mission {
   description         String
   sustainabilityPoints Int
   carbonCreditPoints  Float
+  trustPoints         Int // Points for the Digital Trust Score
   users               UserMission[]
 }
 

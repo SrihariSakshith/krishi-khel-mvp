@@ -11,6 +11,13 @@ const dailyTips = [
     "Consider installing a drip irrigation system to save up to 80% more water."
 ];
 
+const getLevel = (score) => {
+    if (score < 100) return { level: 1, next: 100, progress: (score / 100) * 100 };
+    if (score < 250) return { level: 2, next: 250, progress: ((score - 100) / 150) * 100 };
+    if (score < 500) return { level: 3, next: 500, progress: ((score - 250) / 250) * 100 };
+    return { level: 4, next: 1000, progress: ((score - 500) / 500) * 100 };
+};
+
 function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -18,16 +25,12 @@ function Dashboard() {
 
   useEffect(() => {
     setDailyTip(dailyTips[new Date().getDate() % dailyTips.length]);
-
     const fetchData = async () => {
       try {
         const response = await api.get('/user/dashboard');
         setData(response.data);
-      } catch (error) {
-        console.error("Failed to fetch dashboard data", error);
-      } finally {
-        setLoading(false);
-      }
+      } catch (error) { console.error("Failed to fetch dashboard data", error); } 
+      finally { setLoading(false); }
     };
     fetchData();
   }, []);
@@ -36,20 +39,30 @@ function Dashboard() {
   if (!data) return <p>Could not load dashboard data. Please try logging in again.</p>;
 
   const { user, weather, badges } = data;
+  const farmerLevel = getLevel(user.sustainabilityScore);
 
   return (
     <div className={styles.dashboard}>
-      <h1 className={styles.welcome}>Welcome back, {user.name}!</h1>
+      <div className={styles.header}>
+        <h1 className={styles.welcome}>Welcome, {user.name}!</h1>
+        <div className={styles.levelInfo}>
+            <span>LVL {farmerLevel.level}</span>
+            <div className={styles.xpBar}>
+                <div className={styles.xpFill} style={{ width: `${farmerLevel.progress}%` }}></div>
+            </div>
+            <small>{user.sustainabilityScore} / {farmerLevel.next} PTS</small>
+        </div>
+      </div>
 
       <div className={styles.grid}>
-        <div className="card">
-          <h3>Your Stats</h3>
-          <div className={styles.stat}><span className={styles.statIcon}>🏆</span><div><p className={styles.statValue}>{user.sustainabilityScore}</p><p className={styles.statLabel}>Sustainability Score</p></div></div>
-          <div className={styles.stat}><span className={styles.statIcon}>🌍</span><div><p className={styles.statValue}>{user.carbonCreditScore.toFixed(2)}</p><p className={styles.statLabel}>Est. Carbon Credits</p></div></div>
-          <div className={styles.stat}><span className={styles.statIcon}>🔥</span><div><p className={styles.statValue}>{user.streak}</p><p className={styles.statLabel}>Login Streak</p></div></div>
+        <div className={`card ${styles.mainStats}`}>
+            <div className={styles.stat}><span className={styles.statIcon}>🏆</span><div><p className={styles.statValue}>{user.sustainabilityScore}</p><p className={styles.statLabel}>Sustainability Score</p></div></div>
+            <div className={styles.stat}><span className={styles.statIcon}>🌍</span><div><p className={styles.statValue}>{user.carbonCreditScore.toFixed(2)}</p><p className={styles.statLabel}>Est. Carbon Credits</p></div></div>
+            <div className={styles.stat}><span className={styles.statIcon}>🤝</span><div><p className={styles.statValue}>{user.digitalTrustScore}</p><p className={styles.statLabel}>Digital Trust Score</p></div></div>
+            <div className={styles.stat}><span className={styles.statIcon}>🔥</span><div><p className={styles.statValue}>{user.streak}</p><p className={styles.statLabel}>Login Streak</p></div></div>
         </div>
 
-        <div className="card">
+        <div className={`card ${styles.sideCard}`}>
           <h3>Weather in {user.location}</h3>
           {weather && !weather.error ? (
             <div className={styles.weather}><img src={`http://openweathermap.org/img/wn/${weather.icon}@2x.png`} alt={weather.description} /><div className={styles.weatherInfo}><p className={styles.weatherTemp}>{Math.round(weather.temp)}°C</p><p className={styles.weatherDesc}>{weather.description}</p></div></div>
@@ -62,8 +75,8 @@ function Dashboard() {
           <div className={styles.actions}>
             <Link to="/missions" className={styles.actionBtn}><span>🎯</span> View Missions</Link>
             <Link to="/planner" className={styles.actionBtn}><span>🗺️</span> Farm Planner</Link>
-            <Link to="/diagnose" className={styles.actionBtn}><span>🔬</span> AI Detector</Link>
-            <Link to="/chatbot" className={styles.actionBtn}><span>💬</span> Ask Krishi Mitra</Link>
+            <Link to="/schemes" className={styles.actionBtn}><span>🇮🇳</span> Govt. Schemes</Link>
+            <Link to="/leaderboard" className={styles.actionBtn}><span>🏅</span> Leaderboard</Link>
           </div>
         </div>
 

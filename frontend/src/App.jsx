@@ -9,6 +9,7 @@ import PestDetector from './pages/PestDetector';
 import Leaderboard from './pages/Leaderboard';
 import Profile from './pages/Profile';
 import Chatbot from './pages/Chatbot';
+import Schemes from './pages/Schemes'; // New Import
 import { useAuth } from './hooks/useAuth';
 import { AuthProvider } from './context/AuthContext';
 
@@ -38,6 +39,7 @@ function App() {
                 <Route path="/leaderboard" element={<Leaderboard />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/chatbot" element={<Chatbot />} />
+                <Route path="/schemes" element={<Schemes />} /> {/* New Route */}
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
             </Layout>

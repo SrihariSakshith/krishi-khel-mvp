@@ -1,3 +1,4 @@
 docker-compose down
 docker system prune -a --volumes
 docker-compose run --rm backend npx prisma migrate dev --name full-app-schema
+docker-compose up --build

@@ -1,14 +1,21 @@
 const express = require('express');
 const authMiddleware = require('../middleware/auth.middleware');
 const weatherService = require('../services/weather.service');
-const prisma = require('../prismaClient'); // UPDATED LINE
+const prisma = require('../prismaClient');
 const router = express.Router();
 
 router.get('/dashboard', authMiddleware, async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user.userId },
-      select: { name: true, sustainabilityScore: true, carbonCreditScore: true, streak: true, location: true },
+      select: { 
+          name: true, 
+          sustainabilityScore: true, 
+          carbonCreditScore: true, 
+          digitalTrustScore: true, 
+          streak: true, 
+          location: true 
+        },
     });
     
     if (!user) {

@@ -1,7 +1,7 @@
 const express = require('express');
 const authMiddleware = require('../middleware/auth.middleware');
 const { uploadToDisk } = require('../middleware/upload.middleware');
-const prisma = require('../prismaClient'); // UPDATED LINE
+const prisma = require('../prismaClient');
 const router = express.Router();
 
 router.get('/', authMiddleware, async (req, res) => {
@@ -52,6 +52,7 @@ router.post('/:id/complete', authMiddleware, uploadToDisk.single('proof'), async
                 data: {
                     sustainabilityScore: { increment: mission.sustainabilityPoints },
                     carbonCreditScore: { increment: mission.carbonCreditPoints },
+                    digitalTrustScore: { increment: mission.trustPoints }, // Add trust points
                 }
             })
         ]);
