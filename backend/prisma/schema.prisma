@@ -8,6 +8,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// NEW MODEL for persistent weather caching
+model WeatherCache {
+  location    String   @id
+  data        Json
+  lastFetched DateTime @updatedAt
+}
+
 model User {
   id                  String        @id @default(cuid())
   phone               String        @unique
@@ -17,7 +24,7 @@ model User {
   farmSize            Float
   sustainabilityScore Int           @default(0)
   carbonCreditScore   Float         @default(0.0)
-  digitalTrustScore   Int           @default(50) // New Scheme Eligibility Score
+  digitalTrustScore   Int           @default(50)
   streak              Int           @default(0)
   lastLogin           DateTime?
   farmPlan            Json?
@@ -96,7 +103,7 @@ model Mission {
   description         String
   sustainabilityPoints Int
   carbonCreditPoints  Float
-  trustPoints         Int // Points for the Digital Trust Score
+  trustPoints         Int
   users               UserMission[]
 }
 
