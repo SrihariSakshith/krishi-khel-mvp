@@ -22,7 +22,7 @@ This project is a functional MVP for a gamified platform to promote sustainable 
 2.  **Environment:** Create a `.env` file inside the `backend/` directory. Copy the contents from the instructions and add your own `JWT_SECRET` and `WEATHER_API_KEY`.
 3.  **Initial Migration:** Run this command ONCE to create the database migration files:
     ```bash
-    docker-compose run --rm backend npx prisma migrate dev --name init-with-badges
+    docker-compose run --rm backend npx prisma migrate dev --name final-schema-with-cache
     ```
 4.  **Run:** Open a terminal in the project root and run:
     ```bash
