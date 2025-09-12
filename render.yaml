@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: backend
+    env: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    buildContext: ./backend
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+    envVarsFromFiles:
+      - ./backend/.env
+    healthCheckPath: /
+    disk:
+      name: backend-data
+      mountPath: /app/node_modules
+
+  - type: web
+    name: frontend
+    env: docker
+    plan: free
+    dockerfilePath: ./frontend/Dockerfile
+    buildContext: ./frontend
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+    healthCheckPath: /
+
+  - type: pserv
+    name: db
+    env: docker
+    plan: free
+    image: postgres:13-alpine
+    autoDeploy: true
+    disk:
+      name: postgres-data
+      mountPath: /var/lib/postgresql/data
+    envVars:
+      - key: POSTGRES_USER
+        value: user
+      - key: POSTGRES_PASSWORD
+        value: password
+      - key: POSTGRES_DB
+        value: krishikhel
