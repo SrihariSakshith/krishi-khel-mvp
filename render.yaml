@@ -9,12 +9,9 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-    envVarsFromFiles:
-      - ./backend/.env
+      - key: DATABASE_URL
+        value: postgres://user:password@db:5432/krishikhel
     healthCheckPath: /
-    disk:
-      name: backend-data
-      mountPath: /app/node_modules
 
   - type: web
     name: frontend
